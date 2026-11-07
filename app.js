@@ -31,6 +31,9 @@ if (!currentDeviceId) {
   localStorage.setItem("sms_device_fingerprint", currentDeviceId);
 }
 
+// Local Device Verified Admin
+let deviceLinkedEmail = localStorage.getItem("sms_linked_admin_email") || null;
+
 // In-Memory Cloud State
 let schoolConfig = { 
   isConfigured: false, 
@@ -206,10 +209,10 @@ async function loadDataFromNeon() {
     
     await initNeonTables();
 
-    const configRows = await sql`SELECT * FROM school_config LIMIT 1;`;
-    const geoRows = await sql`SELECT * FROM school_geofence LIMIT 1;`;
-    const teachersRows = await sql`SELECT * FROM teachers ORDER BY staff_id;`;
-    const studentsRows = await sql`SELECT * FROM students ORDER BY roll_number;`;
+    let configRows = [];
+    if (deviceLinkedEmail) {
+      configRows = await sql`SELECT * FROM school_config WHERE LOWER(email) = ${deviceLinkedEmail.toLowerCase()} LIMIT 1;`;
+    }
 
     if (configRows && configRows.length > 0) {
       schoolConfig = {
@@ -217,12 +220,16 @@ async function loadDataFromNeon() {
         email: configRows[0].email,
         password: configRows[0].password_hash,
         adminPin: configRows[0].admin_pin,
-        securityQuestion: configRows[0].security_question || "What is your favorite school teacher name?",
+        securityQuestion: configRows[0].security_question || "What is your secret code?",
         securityAnswer: configRows[0].security_answer || ""
       };
     } else {
       schoolConfig.isConfigured = false;
     }
+
+    const geoRows = await sql`SELECT * FROM school_geofence LIMIT 1;`;
+    const teachersRows = await sql`SELECT * FROM teachers ORDER BY staff_id;`;
+    const studentsRows = await sql`SELECT * FROM students ORDER BY roll_number;`;
 
     if (geoRows && geoRows.length > 0) {
       schoolGeo = {
@@ -273,27 +280,25 @@ async function loadDataFromNeon() {
 }
 
 /* ========================================================
-   AUTHENTICATION LOGIC (SETUP ONCE & LOCK)
+   AUTHENTICATION LOGIC (DEVICE LINKING FLOW)
    ======================================================== */
 function checkAuthFlow() {
   const loginView = $("loginView");
   const appView = $("appView");
-  const setupForm = $("setupForm");
+  const emailAuthCard = $("emailAuthCard");
   const pinCard = $("pinLoginCard");
   const recCard = $("recoveryCard");
 
-  if (!schoolConfig.isConfigured) {
-    // Sirf pehli dafa jab account exist na karta ho
+  if (!deviceLinkedEmail || !schoolConfig.isConfigured) {
     loginView.classList.remove("d-none");
     appView.classList.add("d-none");
-    setupForm.classList.remove("d-none");
+    emailAuthCard.classList.remove("d-none");
     pinCard.classList.add("d-none");
     recCard.classList.add("d-none");
   } else {
-    // Account ban chuka hai: Har dafa direct 4-Digit PIN portal aayega
     loginView.classList.remove("d-none");
     appView.classList.add("d-none");
-    setupForm.classList.add("d-none");
+    emailAuthCard.classList.add("d-none");
     pinCard.classList.remove("d-none");
     recCard.classList.add("d-none");
     refreshTeacherDropdown();
@@ -301,7 +306,59 @@ function checkAuthFlow() {
   }
 }
 
-// 1. Initial Account Creation Submit (Only First Time)
+// Switch between Email Login and Create Account
+$("tabEmailLoginBtn").addEventListener("click", () => {
+  $("tabEmailLoginBtn").classList.add("active");
+  $("tabEmailRegisterBtn").classList.remove("active");
+  $("emailLoginForm").classList.remove("d-none");
+  $("setupForm").classList.add("d-none");
+  $("authCardSub").textContent = "School Admin Login";
+});
+
+$("tabEmailRegisterBtn").addEventListener("click", () => {
+  $("tabEmailRegisterBtn").classList.add("active");
+  $("tabEmailLoginBtn").classList.remove("active");
+  $("setupForm").classList.remove("d-none");
+  $("emailLoginForm").classList.add("d-none");
+  $("authCardSub").textContent = "Create New School Account";
+});
+
+// 1. Email + Password Se Login Karna (Device Link)
+$("emailLoginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("loginEmailInput").value.trim().toLowerCase();
+  const pass = $("loginPassInput").value;
+
+  try {
+    const res = await sql`SELECT * FROM school_config WHERE LOWER(email) = ${email} LIMIT 1;`;
+    if (!res || res.length === 0) {
+      return toast("Yeh email database mein register nahi hai. 'Create Account' karein.", "warning");
+    }
+
+    if (res[0].password_hash !== pass) {
+      return toast("Ghalat Master Password!", "danger");
+    }
+
+    deviceLinkedEmail = res[0].email;
+    localStorage.setItem("sms_linked_admin_email", deviceLinkedEmail);
+
+    schoolConfig = {
+      isConfigured: true,
+      email: res[0].email,
+      password: res[0].password_hash,
+      adminPin: res[0].admin_pin,
+      securityQuestion: res[0].security_question || "What is your secret code?",
+      securityAnswer: res[0].security_answer || ""
+    };
+
+    toast("Device successfully linked! Ab 4-digit PIN se unlock karein.", "success");
+    checkAuthFlow();
+  } catch (err) {
+    toast("Login error: " + err.message, "danger");
+  }
+});
+
+// 2. Create Account Form (Naya Admin Setup)
 $("setupForm").addEventListener("submit", async e => {
   e.preventDefault();
   const email = $("setupEmail").value.trim().toLowerCase();
@@ -321,6 +378,9 @@ $("setupForm").addEventListener("submit", async e => {
       DO UPDATE SET password_hash = ${pass}, admin_pin = ${pin}, security_question = ${question}, security_answer = ${answer};
     `;
 
+    deviceLinkedEmail = email;
+    localStorage.setItem("sms_linked_admin_email", deviceLinkedEmail);
+
     schoolConfig = { 
       isConfigured: true, 
       email, 
@@ -330,10 +390,22 @@ $("setupForm").addEventListener("submit", async e => {
       securityAnswer: answer
     };
 
-    toast("School Account kamyabi se create ho gaya!", "success");
+    toast("Account Created & Device Linked!", "success");
     checkAuthFlow();
   } catch (err) {
     toast("Database save error: " + err.message, "danger");
+  }
+});
+
+// 3. Switch Account / Device Log out
+$("switchAccountBtn").addEventListener("click", () => {
+  if (confirm("Kya aap is device se account un-link kar ke dusre account se login karna chahte hain?")) {
+    deviceLinkedEmail = null;
+    localStorage.removeItem("sms_linked_admin_email");
+    schoolConfig.isConfigured = false;
+    currentSession = null;
+    toast("Device unlinked. Ab naya email enter karein.");
+    checkAuthFlow();
   }
 });
 
@@ -362,7 +434,7 @@ function refreshTeacherDropdown() {
   sel.innerHTML = teachers.map(t => `<option value="${t.id}">${esc(t.name)} (${esc(t.staffId)}) - ${esc(t.assignedClass || "")}</option>`).join("");
 }
 
-// PIN Login Submit
+// Daily PIN Login Submit
 $("pinSubmitForm").addEventListener("submit", async e => {
   e.preventDefault();
   const enteredPin = $("userPinInput").value.trim();
@@ -406,13 +478,17 @@ $("pinSubmitForm").addEventListener("submit", async e => {
 /* ========================================================
    FORGOT PASSWORD & QUESTION-ANSWER RECOVERY FLOW
    ======================================================== */
-$("forgotPinBtn").addEventListener("click", () => {
+function openRecovery() {
   $("pinLoginCard").classList.add("d-none");
+  $("emailAuthCard").classList.add("d-none");
   $("recoveryCard").classList.remove("d-none");
   $("recStep1").classList.remove("d-none");
   $("recStep2Form").classList.add("d-none");
-  $("recoveryTargetEmail").value = schoolConfig.email || "";
-});
+  $("recoveryTargetEmail").value = schoolConfig.email || deviceLinkedEmail || "";
+}
+
+$("forgotPinBtn").addEventListener("click", openRecovery);
+$("forgotPinFromEmailBtn").addEventListener("click", openRecovery);
 
 document.querySelectorAll(".cancel-rec-btn").forEach(btn => {
   btn.addEventListener("click", () => checkAuthFlow());
@@ -470,6 +546,9 @@ $("recStep2Form").addEventListener("submit", async e => {
 
     schoolConfig.password = newPassword;
     schoolConfig.adminPin = newPin;
+
+    deviceLinkedEmail = pendingRecoveryConfig.email;
+    localStorage.setItem("sms_linked_admin_email", deviceLinkedEmail);
 
     toast("Zabardast! Password aur Admin PIN update ho gaya.", "success");
     pendingRecoveryConfig = null;
@@ -1132,7 +1211,7 @@ $("saAllBtn").addEventListener("click", () => {
   document.querySelectorAll('#saBody input[value="Present"]').forEach(r => r.checked = true);
 });
 
-$("saSaveBtn").addEventListener("click", async () => {
+$("saSaveBtn").addEventListener("click", async e => {
   const dateVal = $("saDate").value || today();
   const list = classStudents();
 
