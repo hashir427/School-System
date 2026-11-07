@@ -27,38 +27,66 @@
 <!-- AUTH WRAPPER -->
 <div id="loginView" class="d-flex align-items-center justify-content-center py-4" style="min-height: 100vh; background: #0f3b46;">
   
-  <!-- VIEW 1: INITIAL ADMIN SETUP (Sirf 1 martaba dikhega) -->
-  <form id="setupForm" class="auth-card d-none">
+  <!-- VIEW 1: EMAIL & PASSWORD LOGIN SCREEN (Naye device ke liye) -->
+  <div id="emailAuthCard" class="auth-card d-none">
     <div class="text-center mb-3">
       <h4 class="brand text-white mb-1">GGPS Sawarcup</h4>
-      <p class="text-secondary small">School official account aur security details register karein.</p>
+      <p class="text-secondary small" id="authCardSub">School Admin Login</p>
     </div>
-    <div class="mb-3">
-      <label class="form-label">School Official Email *</label>
-      <input id="setupEmail" type="email" class="form-control" placeholder="admin@school.com" required>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Master Password *</label>
-      <input id="setupPass" type="password" class="form-control" placeholder="••••••••" required>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Admin 4-Digit Login PIN *</label>
-      <input id="setupPin" type="text" maxlength="4" class="form-control pin-input" placeholder="1234" required pattern="[0-9]{4}">
-      <small class="text-secondary d-block mt-1">Rozana dashboard kholne ke liye ye 4-digit PIN use hoga.</small>
-    </div>
-    <div class="mb-3">
-      <label class="form-label text-warning">Set Your Security Question *</label>
-      <input id="setupQuestion" type="text" class="form-control" placeholder="e.g. My favorite teacher name?" required>
-      <small class="text-secondary">Password bhoolne par yehi sawal poocha jayega.</small>
-    </div>
-    <div class="mb-4">
-      <label class="form-label text-warning">Security Answer *</label>
-      <input id="setupAnswer" type="text" class="form-control" placeholder="Apna secret jawab likhein" required>
-    </div>
-    <button type="submit" class="btn btn-chalk w-100 py-2">Create & Activate School</button>
-  </form>
 
-  <!-- VIEW 2: DAILY 4-DIGIT PIN LOGIN SCREEN -->
+    <!-- Toggle Login / Register -->
+    <div class="btn-group w-100 mb-3" role="group">
+      <button type="button" id="tabEmailLoginBtn" class="btn btn-sm btn-outline-warning active">Login</button>
+      <button type="button" id="tabEmailRegisterBtn" class="btn btn-sm btn-outline-warning">Create Account</button>
+    </div>
+
+    <!-- 1A: Existing Email Login -->
+    <form id="emailLoginForm">
+      <div class="mb-3">
+        <label class="form-label small">School Official Email *</label>
+        <input id="loginEmailInput" type="email" class="form-control" placeholder="admin@school.com" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small">Master Password *</label>
+        <input id="loginPassInput" type="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-chalk w-100 py-2 mb-2">Login to Device</button>
+    </form>
+
+    <!-- 1B: Create New Account -->
+    <form id="setupForm" class="d-none">
+      <div class="mb-3">
+        <label class="form-label small">School Official Email *</label>
+        <input id="setupEmail" type="email" class="form-control" placeholder="admin@school.com" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small">Master Password *</label>
+        <input id="setupPass" type="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small">Set 4-Digit Login PIN *</label>
+        <input id="setupPin" type="text" maxlength="4" class="form-control pin-input" placeholder="1234" required pattern="[0-9]{4}">
+        <small class="text-secondary">Is phone par rozana PIN se dashboard open hoga.</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-warning">Security Question *</label>
+        <input id="setupQuestion" type="text" class="form-control" placeholder="e.g. My favorite school teacher?" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small text-warning">Security Answer *</label>
+        <input id="setupAnswer" type="text" class="form-control" placeholder="Apna secret jawab likhein" required>
+      </div>
+      <button type="submit" class="btn btn-chalk w-100 py-2 mb-2">Create & Link Device</button>
+    </form>
+
+    <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-25">
+      <button type="button" id="forgotPinFromEmailBtn" class="btn btn-link text-warning btn-sm p-0 text-decoration-none">
+        🔑 Forgot Password / PIN?
+      </button>
+    </div>
+  </div>
+
+  <!-- VIEW 2: DAILY 4-DIGIT PIN LOGIN SCREEN (Jab device pehle se verified ho) -->
   <div id="pinLoginCard" class="auth-card d-none">
     <div class="text-center mb-3">
       <h4 class="brand text-white mb-1">GGPS Sawarcup</h4>
@@ -85,21 +113,23 @@
       <button type="submit" class="btn btn-chalk w-100 py-2 mb-2">Unlock Dashboard</button>
     </form>
     
-    <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-25">
+    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary border-opacity-25">
       <button type="button" id="forgotPinBtn" class="btn btn-link text-warning btn-sm p-0 text-decoration-none">
-        🔑 Forgot Admin PIN / Password?
+        🔑 Forgot PIN?
+      </button>
+      <button type="button" id="switchAccountBtn" class="btn btn-link text-info btn-sm p-0 text-decoration-none">
+        🔄 Switch / Log out Device
       </button>
     </div>
   </div>
 
-  <!-- VIEW 3: RECOVERY SCREEN (Question & Answer Based) -->
+  <!-- VIEW 3: RECOVERY SCREEN -->
   <div id="recoveryCard" class="auth-card d-none">
     <div class="text-center mb-3">
       <h5 class="brand text-white mb-1">Password & PIN Recovery</h5>
       <p class="text-secondary small">Security question ka jawab de kar account reset karein.</p>
     </div>
 
-    <!-- Step A: Email check -->
     <div id="recStep1">
       <div class="mb-3">
         <label class="form-label small">Enter Registered School Email</label>
@@ -109,7 +139,6 @@
       <button type="button" class="btn btn-outline-secondary w-100 btn-sm cancel-rec-btn">Cancel</button>
     </div>
 
-    <!-- Step B: Question Answer & New PIN -->
     <form id="recStep2Form" class="d-none">
       <div class="mb-3">
         <label class="form-label small text-warning fw-bold">Your Security Question:</label>
@@ -147,7 +176,6 @@
 
 <main class="container-xl py-3">
 
-<!-- Teacher Self-Attendance Bar -->
 <div id="teacherSelfAttBar" class="card-s mb-3 d-none border-info" style="background: #112630;">
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
