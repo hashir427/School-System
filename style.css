@@ -1,0 +1,195 @@
+/* School Management System styles. Palette: ink teal + chalk yellow on cool paper. */
+:root {
+  --ink: #0f3b46;
+  --ink-2: #17566a;
+  --chalk: #f0b429;
+  --paper: #f2f5f7;
+  --card: #fff;
+  --line: #dbe3e8;
+  --text: #1d2b32;
+  --muted: #64767f;
+  --ok: #1f8a5b;
+  --bad: #c93c3c;
+  --late: #b7791f;
+  --leave: #3b6fb6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0e1a1f;
+    --card: #15262d;
+    --line: #26404a;
+    --text: #ffffff;
+    --muted: #a0b3bc;
+    --ink: #0a2a33;
+  }
+  .table {
+    --bs-table-color: #ffffff;
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--line);
+  }
+}
+
+body {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--text);
+}
+
+h1, h2, h3, h4, h5, .brand {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  letter-spacing: -.01em;
+}
+
+.topbar {
+  background: var(--ink);
+  color: #fff;
+  border-bottom: 4px solid var(--chalk);
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.nav-pills .nav-link {
+  color: var(--muted);
+  font-weight: 600;
+  border-radius: .4rem;
+}
+
+.nav-pills .nav-link.active {
+  background: var(--ink-2);
+  color: #fff;
+}
+
+.card-s {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: .6rem;
+  padding: 1.1rem;
+}
+
+.kpi {
+  border-left: 5px solid var(--ink-2);
+}
+
+.kpi.k2 { border-left-color: var(--chalk); }
+.kpi.k3 { border-left-color: var(--ok); }
+.kpi.k4 { border-left-color: var(--leave); }
+
+.kpi .v {
+  font-family: 'Bricolage Grotesque';
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi .l {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.badge-s {
+  padding: .3rem .6rem;
+  border-radius: 2rem;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.b-Present { background: var(--ok); }
+.b-Absent { background: var(--bad); }
+.b-Late { background: var(--late); }
+.b-Leave { background: var(--leave); }
+
+.att-radio {
+  display: inline-flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+}
+
+.att-radio input { display: none; }
+
+.att-radio label {
+  border: 1px solid var(--line);
+  padding: .25rem .65rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  font-size: .85rem;
+  user-select: none;
+  color: #ffffff;
+}
+
+.att-radio input:checked + label.lP { background: var(--ok); color: #fff; border-color: var(--ok); }
+.att-radio input:checked + label.lA { background: var(--bad); color: #fff; border-color: var(--bad); }
+.att-radio input:checked + label.lL { background: var(--late); color: #fff; border-color: var(--late); }
+.att-radio input:checked + label.lV { background: var(--leave); color: #fff; border-color: var(--leave); }
+
+.btn-chalk {
+  background: var(--chalk);
+  border: 0;
+  color: #2b2100;
+  font-weight: 700;
+}
+
+.btn-chalk:hover { background: #e0a420; color: #000; }
+
+.empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.table-wrap { overflow-x: auto; }
+
+#loginView {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--chalk);
+  outline-offset: 2px;
+}
+
+/* Visibility fixes for dark inputs and selects */
+.form-control, .form-select {
+  background-color: #15262d !important;
+  color: #ffffff !important;
+  border: 1px solid #335360 !important;
+}
+
+.form-control::placeholder {
+  color: #8da4ae !important;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: #182e36 !important;
+  color: #ffffff !important;
+  border-color: var(--chalk) !important;
+  box-shadow: 0 0 0 0.25rem rgba(240, 180, 41, 0.25) !important;
+}
+
+.form-select option {
+  background-color: #15262d !important;
+  color: #ffffff !important;
+}
+
+.form-label {
+  color: #e0e9ed !important;
+  font-weight: 600;
+}
+
+.modal-content {
+  background-color: #15262d;
+  color: #ffffff;
+  border: 1px solid var(--line);
+}
+
+.modal-header, .modal-footer {
+  border-color: #26404a;
+}
