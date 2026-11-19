@@ -1,0 +1,389 @@
+/* GGPS Sawar Cup - Mobile App UI + Logo Styling + Theme Studio */
+:root {
+  --bg-main: #0b1920;
+  --bg-card: rgba(19, 39, 49, 0.94);
+  --bg-input: #0d1d25;
+  --border-color: #294c5c;
+  --text-main: #ffffff;
+  --text-soft: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #f5b700;
+  --accent-hover: #ffca2c;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-main);
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--text-main);
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .brand {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  color: #ffffff;
+}
+
+.bi {
+  vertical-align: -0.125em;
+}
+
+/* App Logo Styling */
+.app-logo-badge {
+  width: 78px;
+  height: 78px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(245, 183, 0, 0.5);
+}
+
+.header-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  object-fit: cover;
+  border: 1px solid rgba(245, 183, 0, 0.5);
+}
+
+/* Auth Screen */
+.auth-wrapper {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #154352 0%, #0b1920 70%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.auth-card {
+  width: min(440px, 92vw);
+  background: rgba(19, 39, 49, 0.93);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.65rem;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+  position: relative;
+  z-index: 2;
+}
+
+.pin-input {
+  letter-spacing: 0.75rem;
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Header / Topbar */
+.topbar {
+  background: rgba(15, 44, 56, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+/* Cards */
+.card-s {
+  background: var(--bg-card);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  padding: 1.2rem;
+  color: var(--text-main);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+/* KPI Boxes */
+.kpi {
+  border-left: 4px solid var(--accent);
+  height: 100%;
+}
+.kpi.k2 { border-left-color: #38bdf8; }
+.kpi.k3 { border-left-color: #22c55e; }
+.kpi.k4 { border-left-color: #c084fc; }
+
+.kpi .v {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.kpi .l {
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  margin-top: 0.25rem;
+}
+
+/* Readable Labels & Text */
+.form-label, label {
+  color: #f1f5f9 !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.text-secondary, small.text-secondary {
+  color: #cbd5e1 !important;
+}
+
+/* Inputs, Selects, Textareas */
+.form-control, .form-select {
+  background-color: var(--bg-input) !important;
+  color: #ffffff !important;
+  border: 1px solid #386173 !important;
+  border-radius: 0.55rem;
+  font-size: 0.95rem;
+  min-height: 42px;
+}
+
+.form-control-sm, .form-select-sm {
+  min-height: 34px;
+}
+
+.form-control-color {
+  width: 100%;
+  height: 42px;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+
+.form-control::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.9;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 0.2rem rgba(245, 183, 0, 0.25) !important;
+}
+
+.form-control:disabled, .form-select:disabled {
+  background-color: #10232c !important;
+  color: #cbd5e1 !important;
+  opacity: 0.85;
+}
+
+.form-select option {
+  background-color: #132731;
+  color: #ffffff;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.3);
+  cursor: pointer;
+}
+
+/* Primary Chalk Button */
+.btn-chalk {
+  background-color: var(--accent);
+  color: #0b1920 !important;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.55rem;
+  transition: all 0.18s ease;
+}
+
+.btn-chalk:hover, .btn-chalk:focus {
+  background-color: var(--accent-hover);
+  color: #0b1920 !important;
+  transform: translateY(-1px);
+}
+
+.btn-chalk:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Navigation Pills - App Style */
+.app-nav-pills .nav-link {
+  color: #f1f5f9;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.app-nav-pills .nav-link:hover {
+  background-color: #1c3b4a;
+  color: #ffffff;
+}
+
+.app-nav-pills .nav-link.active {
+  background-color: var(--accent) !important;
+  color: #0b1920 !important;
+  border-color: var(--accent);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 0.6rem;
+  border: 1px solid #21404e;
+}
+
+.table {
+  color: #ffffff !important;
+  margin-bottom: 0;
+  border-color: #21404e !important;
+}
+
+.table thead th {
+  background-color: #0d1d25 !important;
+  color: var(--accent) !important;
+  font-weight: 700;
+  border-bottom: 2px solid #294c5c !important;
+  white-space: nowrap;
+  padding: 0.75rem;
+}
+
+.table tbody td {
+  background-color: transparent !important;
+  color: #f8fafc !important;
+  border-color: #1e3a47 !important;
+  vertical-align: middle;
+  padding: 0.65rem 0.75rem;
+}
+
+.table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem !important;
+  color: #cbd5e1 !important;
+  font-style: italic;
+}
+
+/* Modals */
+.modal-content {
+  background-color: #132731;
+  color: #ffffff;
+  border: 1px solid #386173;
+  border-radius: 0.85rem;
+}
+
+.modal-header, .modal-footer {
+  border-color: #264653;
+}
+
+/* Attendance Radio Buttons */
+.att-radio {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.att-radio input[type="radio"] {
+  display: none;
+}
+
+.att-radio label {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.45rem;
+  border: 1px solid #386173;
+  cursor: pointer;
+  font-size: 0.85rem;
+  background: #0d1d25;
+  color: #e2e8f0 !important;
+  margin-bottom: 0;
+  transition: 0.15s;
+}
+
+.att-radio input[value="Present"]:checked + label { background: #16a34a; color: #fff !important; border-color: #16a34a; }
+.att-radio input[value="Absent"]:checked + label  { background: #dc2626; color: #fff !important; border-color: #dc2626; }
+.att-radio input[value="Late"]:checked + label    { background: #d97706; color: #fff !important; border-color: #d97706; }
+.att-radio input[value="Leave"]:checked + label   { background: #2563eb; color: #fff !important; border-color: #2563eb; }
+
+/* Status Badges */
+.badge-s {
+  display: inline-block;
+  padding: 0.22rem 0.6rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #ffffff;
+}
+.b-Present { background: #16a34a; }
+.b-Absent  { background: #dc2626; }
+.b-Late    { background: #d97706; }
+.b-Leave   { background: #2563eb; }
+
+.progress {
+  background-color: #0d1d25;
+  border: 1px solid #294c5c;
+}
+
+/* Theme Swatches & Live Login Preview */
+.swatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.theme-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 0.55rem;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+}
+
+.theme-swatch:hover {
+  transform: scale(1.1);
+  border-color: #ffffff;
+}
+
+.login-preview-box {
+  height: 150px;
+  border-radius: 0.65rem;
+  border: 1px solid #386173;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-preview-mini-card {
+  background: rgba(19, 39, 49, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #ffffff;
+  backdrop-filter: blur(6px);
+}

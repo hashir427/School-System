@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GGPS Sawar Cup - School Management App</title>
+<link rel="icon" type="image/png" href="logo-192.png">
+<link rel="apple-touch-icon" href="logo-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2c38">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="style.css?v=8" rel="stylesheet">
+</head>
+<body>
+
+<!-- AUTH WRAPPER -->
+<div id="loginView" class="auth-wrapper d-flex align-items-center justify-content-center py-4">
+  
+  <!-- VIEW 1: EMAIL & PASSWORD LOGIN SCREEN -->
+  <div id="emailAuthCard" class="auth-card d-none">
+    <div class="text-center mb-3">
+      <img src="logo-192.png" alt="GGPS Sawar Cup Logo" class="app-logo-badge mb-2">
+      <h4 class="brand text-white justify-content-center mb-1">GGPS Sawar Cup</h4>
+      <p class="text-secondary small mb-0" id="authCardSub">School Admin Login</p>
+    </div>
+
+    <div class="btn-group w-100 mb-3" role="group">
+      <button type="button" id="tabEmailLoginBtn" class="btn btn-sm btn-outline-warning active"><i class="bi bi-box-arrow-in-right me-1"></i>Login</button>
+      <button type="button" id="tabEmailRegisterBtn" class="btn btn-sm btn-outline-warning"><i class="bi bi-person-plus me-1"></i>Create Account</button>
+    </div>
+
+    <!-- 1A: Existing Email Login -->
+    <form id="emailLoginForm">
+      <div class="mb-3">
+        <label class="form-label">School Official Email *</label>
+        <input id="loginEmailInput" type="email" class="form-control" placeholder="admin@school.com" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Master Password *</label>
+        <div class="input-group">
+          <input id="loginPassInput" type="password" class="form-control" placeholder="••••••••" required>
+          <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="loginPassInput" title="Show/Hide Password">
+            <i class="bi bi-eye-fill text-warning"></i>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-chalk w-100 py-2 mb-2"><i class="bi bi-shield-lock me-1"></i>Login to Device</button>
+    </form>
+
+    <!-- 1B: Create New Account -->
+    <form id="setupForm" class="d-none">
+      <div class="mb-3">
+        <label class="form-label">School Official Email *</label>
+        <input id="setupEmail" type="email" class="form-control" placeholder="admin@school.com" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Master Password *</label>
+        <div class="input-group">
+          <input id="setupPass" type="password" class="form-control" placeholder="••••••••" required>
+          <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="setupPass" title="Show/Hide Password">
+            <i class="bi bi-eye-fill text-warning"></i>
+          </button>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Set 4-Digit Login PIN *</label>
+        <div class="input-group">
+          <input id="setupPin" type="password" maxlength="4" class="form-control pin-input" placeholder="••••" required pattern="[0-9]{4}">
+          <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="setupPin" title="Show/Hide PIN">
+            <i class="bi bi-eye-fill text-warning"></i>
+          </button>
+        </div>
+        <small class="text-secondary">Is device par rozana PIN se dashboard open hoga.</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-warning">Security Question *</label>
+        <input id="setupQuestion" type="text" class="form-control" placeholder="e.g. My favorite school teacher?" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-warning">Security Answer *</label>
+        <input id="setupAnswer" type="text" class="form-control" placeholder="Apna secret jawab likhein" required>
+      </div>
+      <button type="submit" class="btn btn-chalk w-100 py-2 mb-2"><i class="bi bi-check-circle me-1"></i>Create & Link Device</button>
+    </form>
+
+    <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-25">
+      <button type="button" id="forgotPinFromEmailBtn" class="btn btn-link text-warning btn-sm p-0 text-decoration-none">
+        <i class="bi bi-key-fill me-1"></i>Forgot Password / PIN?
+      </button>
+    </div>
+  </div>
+
+  <!-- VIEW 2: DAILY 4-DIGIT PIN LOGIN SCREEN -->
+  <div id="pinLoginCard" class="auth-card d-none">
+    <div class="text-center mb-3">
+      <img src="logo-192.png" alt="GGPS Sawar Cup Logo" class="app-logo-badge mb-2">
+      <h4 class="brand text-white justify-content-center mb-1">GGPS Sawar Cup</h4>
+      <p class="text-secondary small mb-0" id="pinSubtitle">Admin 4-digit PIN enter karein</p>
+    </div>
+
+    <div class="btn-group w-100 mb-3" role="group">
+      <button type="button" id="tabAdminBtn" class="btn btn-sm btn-outline-warning active"><i class="bi bi-person-badge me-1"></i>Admin Login</button>
+      <button type="button" id="tabTeacherBtn" class="btn btn-sm btn-outline-warning"><i class="bi bi-person-workspace me-1"></i>Teacher Login</button>
+    </div>
+
+    <div id="teacherSelectWrap" class="mb-3 d-none">
+      <label class="form-label">Select Your Name / Staff ID</label>
+      <select id="loginTeacherSelect" class="form-select"></select>
+    </div>
+
+    <form id="pinSubmitForm">
+      <div class="mb-3">
+        <label class="form-label text-center w-100">Enter 4-Digit PIN</label>
+        <div class="input-group">
+          <input id="userPinInput" type="password" maxlength="4" class="form-control pin-input" placeholder="••••" required autofocus pattern="[0-9]{4}">
+          <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="userPinInput" title="Show/Hide PIN">
+            <i class="bi bi-eye-fill text-warning"></i>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-chalk w-100 py-2 mb-2"><i class="bi bi-unlock-fill me-1"></i>Unlock Dashboard</button>
+    </form>
+    
+    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary border-opacity-25">
+      <button type="button" id="forgotPinBtn" class="btn btn-link text-warning btn-sm p-0 text-decoration-none">
+        <i class="bi bi-key-fill me-1"></i>Forgot PIN?
+      </button>
+      <button type="button" id="switchAccountBtn" class="btn btn-link text-info btn-sm p-0 text-decoration-none">
+        <i class="bi bi-arrow-left-right me-1"></i>Switch Account
+      </button>
+    </div>
+  </div>
+
+  <!-- VIEW 3: RECOVERY SCREEN -->
+  <div id="recoveryCard" class="auth-card d-none">
+    <div class="text-center mb-3">
+      <img src="logo-192.png" alt="GGPS Sawar Cup Logo" class="app-logo-badge mb-2">
+      <h5 class="brand text-white justify-content-center mb-1"><i class="bi bi-shield-exclamation text-warning"></i> Password & PIN Recovery</h5>
+      <p class="text-secondary small mb-0">Security question ka jawab de kar account reset karein.</p>
+    </div>
+
+    <div id="recStep1">
+      <div class="mb-3">
+        <label class="form-label">Enter Registered School Email</label>
+        <input id="recoveryTargetEmail" type="email" class="form-control" required placeholder="admin@school.com">
+      </div>
+      <button type="button" id="verifyEmailBtn" class="btn btn-chalk w-100 py-2 mb-2">Next: Check Question</button>
+      <button type="button" class="btn btn-outline-light w-100 btn-sm cancel-rec-btn">Cancel</button>
+    </div>
+
+    <form id="recStep2Form" class="d-none">
+      <div class="mb-3">
+        <label class="form-label text-warning fw-bold">Your Security Question:</label>
+        <div id="displayQuestion" class="p-2 rounded bg-dark text-white border border-secondary small"></div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Enter Your Answer *</label>
+        <input id="recoveryAnswerInput" type="text" class="form-control" required placeholder="Jawab likhein">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">New Master Password *</label>
+        <div class="input-group">
+          <input id="resetNewPass" type="password" class="form-control" placeholder="••••••••" required>
+          <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="resetNewPass" title="Show/Hide Password">
+            <i class="bi bi-eye-fill text-warning"></i>
+          </button>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-warning">New Admin 4-Digit PIN *</label>
+        <div class="input-group">
+          <input id="resetNewPin" type="password" maxlength="4" class="form-control pin-input" placeholder="••••" required pattern="[0-9]{4}">
+          <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="resetNewPin" title="Show/Hide PIN">
+            <i class="bi bi-eye-fill text-warning"></i>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success w-100 py-2 mb-2">Reset Password & PIN</button>
+      <button type="button" class="btn btn-outline-light w-100 btn-sm cancel-rec-btn">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD VIEW -->
+<div id="appView" class="d-none">
+<header class="topbar py-2 sticky-top">
+  <div class="container-xl d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="brand">
+      <img src="logo-192.png" alt="Logo" class="header-logo">
+      GGPS Sawar Cup
+    </span>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge text-bg-warning px-2 py-1 small fw-bold" id="roleBadge">Admin</span>
+      <button id="lockScreenBtn" class="btn btn-sm btn-outline-light"><i class="bi bi-lock-fill me-1"></i>Lock</button>
+    </div>
+  </div>
+</header>
+
+<main class="container-xl py-3">
+
+<!-- Teacher GPS Punch Bar -->
+<div id="teacherSelfAttBar" class="card-s mb-3 d-none border-info" style="background: #112a36;">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h6 class="mb-1 text-info"><i class="bi bi-geo-alt-fill me-1"></i>Teacher Live Attendance (GPS + Device Lock)</h6>
+      <small class="text-secondary" id="teacherGeoStatus">School boundary ke andar aakar apni hazri lagayein.</small>
+    </div>
+    <button id="punchAttendanceBtn" class="btn btn-chalk"><i class="bi bi-geo-fill me-1"></i>Punch Attendance Now</button>
+  </div>
+</div>
+
+<!-- Mobile-Friendly Navigation Tabs -->
+<ul class="nav nav-pills mb-3 flex-nowrap flex-md-wrap overflow-auto pb-1 gap-2 app-nav-pills" role="tablist">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabDash"><i class="bi bi-speedometer2"></i>Dashboard</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabAdmit"><i class="bi bi-person-plus-fill"></i>Admission</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabDir"><i class="bi bi-people-fill"></i>Students</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabSAtt"><i class="bi bi-calendar-check-fill"></i>Attendance</button></li>
+  <li class="nav-item" id="navTeacherAtt"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabTAtt"><i class="bi bi-person-workspace"></i>Teachers</button></li>
+  <li class="nav-item" id="navExport"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabExp"><i class="bi bi-file-earmark-spreadsheet-fill"></i>Export</button></li>
+  <li class="nav-item" id="navGeoSettings"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabGeo"><i class="bi bi-geo-alt-fill"></i>School GPS</button></li>
+  <li class="nav-item" id="navAdminSettings"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabSettings"><i class="bi bi-shield-lock-fill"></i>Security</button></li>
+</ul>
+
+<div class="tab-content">
+<!-- DASHBOARD -->
+<div class="tab-pane fade show active" id="tabDash">
+  <div class="row g-2 mb-3 align-items-end">
+    <div class="col-6 col-md-3"><label class="form-label">Date</label><input type="date" id="dashDate" class="form-control"></div>
+    <div class="col-6 col-md-3"><label class="form-label">Class</label><select id="dashClass" class="form-select"><option value="">All classes</option></select></div>
+    <div class="col-6 col-md-3"><label class="form-label">Section</label><select id="dashSection" class="form-select"><option value="">All sections</option></select></div>
+    <div class="col-6 col-md-3"><button id="refreshDashBtn" class="btn btn-outline-info w-100"><i class="bi bi-arrow-clockwise me-1"></i>Refresh Data</button></div>
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="card-s kpi"><div class="v" id="kStudents">0</div><div class="l"><i class="bi bi-people me-1 text-warning"></i>Total students</div></div></div>
+    <div class="col-6 col-lg-3"><div class="card-s kpi k2"><div class="v" id="kTeachers">0</div><div class="l"><i class="bi bi-person-badge me-1 text-info"></i>Total faculty</div></div></div>
+    <div class="col-6 col-lg-3"><div class="card-s kpi k3"><div class="v" id="kRate">0%</div><div class="l"><i class="bi bi-check2-circle me-1 text-success"></i>Student attendance</div></div></div>
+    <div class="col-6 col-lg-3"><div class="card-s kpi k4"><div class="v" id="kTeachAtt">0 / 0</div><div class="l"><i class="bi bi-person-check me-1"></i>Teachers present</div></div></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card-s h-100">
+        <h5 class="mb-3"><i class="bi bi-bar-chart-fill text-warning me-2"></i>Attendance Overview</h5>
+        <div class="progress mb-3" style="height:1.5rem" id="attBar"></div>
+        <div id="attLegend" class="small d-flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card-s h-100">
+        <h5 class="mb-3"><i class="bi bi-exclamation-circle-fill text-danger me-2"></i>Absentees <span class="badge text-bg-danger ms-1" id="absCount">0</span></h5>
+        <div id="absList" class="table-wrap" style="max-height:260px;overflow:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMISSION -->
+<div class="tab-pane fade" id="tabAdmit">
+  <form id="admitForm" class="card-s" novalidate>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h5 class="mb-0"><i class="bi bi-person-plus-fill text-warning me-2"></i>Student Admission</h5>
+      <span class="text-warning small fw-semibold" id="admitRoleNote"></span>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6"><label class="form-label">Full name *</label><input name="fullName" class="form-control" required></div>
+      <div class="col-md-6"><label class="form-label">Father's name *</label><input name="fatherName" class="form-control" required></div>
+      <div class="col-md-3"><label class="form-label">Roll number *</label><input name="rollNumber" class="form-control" required></div>
+      <div class="col-md-3"><label class="form-label">Class *</label><select name="class" id="admitClass" class="form-select std-class-sel" required></select></div>
+      <div class="col-md-3"><label class="form-label">Section *</label><select name="section" id="admitSection" class="form-select std-sec-sel" required></select></div>
+      <div class="col-md-3"><label class="form-label">B-Form number</label><input name="bFormNumber" class="form-control" placeholder="00000-0000000-0"></div>
+      <div class="col-md-4"><label class="form-label">Contact number *</label><input name="phone" type="tel" class="form-control" required></div>
+      <div class="col-md-4">
+        <label class="form-label">Date of birth *</label>
+        <input id="admitDob" name="dob" type="date" class="form-control" required>
+        <div id="ageWarning" class="text-warning small mt-1 d-none fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>Age 4 saal se kam hai (<span id="calcAgeText"></span>).</div>
+      </div>
+      <div class="col-md-4"><label class="form-label">B-Form file (JPG, PNG, PDF)</label><input id="bFormFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf"></div>
+      <div class="col-12"><label class="form-label">Address *</label><textarea name="address" rows="2" class="form-control" required></textarea></div>
+    </div>
+    <button id="admitBtn" class="btn btn-chalk mt-3 px-4"><i class="bi bi-check-lg me-1"></i>Admit Student</button>
+  </form>
+</div>
+
+<!-- DIRECTORY -->
+<div class="tab-pane fade" id="tabDir">
+  <div class="card-s">
+    <div class="row g-2 mb-3">
+      <div class="col-md-8">
+        <input id="searchBox" class="form-control" placeholder="Search by name, roll number, class or B-Form..." aria-label="Search students">
+      </div>
+      <div class="col-md-4">
+        <select id="filterAge" class="form-select">
+          <option value="all">Filter by Age: All</option>
+          <option value="under4">Under 4 years (&lt; 4 yrs)</option>
+          <option value="4to6">4 to 6 years</option>
+          <option value="7to10">7 to 10 years</option>
+          <option value="above10">11+ years</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Name</th><th>Father</th><th>Roll</th><th>Age / DOB</th><th>Class</th><th>Phone</th><th>B-Form</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="dirBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT ATTENDANCE -->
+<div class="tab-pane fade" id="tabSAtt">
+  <div class="card-s">
+    <div class="row g-2 mb-3 align-items-end">
+      <div class="col-6 col-md-3"><label class="form-label">Date</label><input type="date" id="saDate" class="form-control"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Class</label><select id="saClass" class="form-select"></select></div>
+      <div class="col-6 col-md-3"><label class="form-label">Section</label><select id="saSection" class="form-select"></select></div>
+      <div class="col-6 col-md-3 d-flex gap-2">
+        <button id="saAllBtn" class="btn btn-outline-success flex-fill"><i class="bi bi-check-all me-1"></i>All Present</button>
+        <button id="saSaveBtn" class="btn btn-chalk flex-fill"><i class="bi bi-save me-1"></i>Save</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table align-middle">
+        <thead><tr><th>Roll</th><th>Name</th><th>Status</th></tr></thead>
+        <tbody id="saBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER ATTENDANCE -->
+<div class="tab-pane fade" id="tabTAtt">
+  <div class="card-s">
+    <div class="row g-2 mb-3 align-items-end">
+      <div class="col-6 col-md-3"><label class="form-label">Date</label><input type="date" id="taDate" class="form-control"></div>
+      <div class="col-6 col-md-9 d-flex gap-2 justify-content-md-end flex-wrap">
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#teacherModal"><i class="bi bi-person-plus me-1"></i>Add Teacher</button>
+        <button id="taSaveBtn" class="btn btn-chalk"><i class="bi bi-save me-1"></i>Save Attendance</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Assigned Class</th>
+            <th>PIN</th>
+            <th>Device Lock</th>
+            <th>Status</th>
+            <th>Check-in</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SCHOOL GPS SETUP -->
+<div class="tab-pane fade" id="tabGeo">
+  <div class="card-s" style="max-width: 650px;">
+    <h5><i class="bi bi-geo-alt-fill text-warning me-2"></i>School Geofence / Location Setup</h5>
+    <p class="text-secondary small">School ka GPS location point aur attendance radius set karein.</p>
+    <div class="mb-3">
+      <button id="setSchoolLocationBtn" class="btn btn-outline-info w-100 py-2">
+        <i class="bi bi-crosshair me-1"></i>Set My Current GPS Location as School Center
+      </button>
+    </div>
+    <div class="row g-3">
+      <div class="col-6">
+        <label class="form-label">School Latitude</label>
+        <input id="geoLat" class="form-control" placeholder="e.g. 31.6253">
+      </div>
+      <div class="col-6">
+        <label class="form-label">School Longitude</label>
+        <input id="geoLng" class="form-control" placeholder="e.g. 71.0654">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Allowed Boundary Radius (Meters)</label>
+        <div class="input-group">
+          <input id="geoRadius" type="number" class="form-control" value="150" min="20" max="1000">
+          <span class="input-group-text bg-dark text-white border-secondary">Meters</span>
+        </div>
+      </div>
+      <div class="col-12">
+        <button id="saveGeoBtn" class="btn btn-chalk w-100"><i class="bi bi-save me-1"></i>Save Geofence Settings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN SECURITY + THEME & BACKGROUND STUDIO -->
+<div class="tab-pane fade" id="tabSettings">
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="card-s h-100">
+        <h5><i class="bi bi-shield-lock-fill text-warning me-2"></i>Principal Security Settings</h5>
+        <p class="text-secondary small">Master Password, 4-Digit PIN, aur Security Question/Answer update karein.</p>
+        <form id="adminSecurityForm" class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Current Master Password *</label>
+            <div class="input-group">
+              <input id="curMasterPass" type="password" class="form-control" required placeholder="Purana password confirm karein">
+              <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="curMasterPass">
+                <i class="bi bi-eye-fill text-warning"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label">New Master Password (Optional)</label>
+            <div class="input-group">
+              <input id="newMasterPass" type="password" class="form-control" placeholder="Naya password (agar badalna ho)">
+              <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="newMasterPass">
+                <i class="bi bi-eye-fill text-warning"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label text-warning">New Admin 4-Digit Login PIN *</label>
+            <div class="input-group">
+              <input id="newAdminPin" type="password" maxlength="4" class="form-control pin-input" required pattern="[0-9]{4}" placeholder="••••">
+              <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="newAdminPin">
+                <i class="bi bi-eye-fill text-warning"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label text-warning">Update Security Question *</label>
+            <input id="curSecQuestion" type="text" class="form-control" required placeholder="Question">
+          </div>
+          <div class="col-12">
+            <label class="form-label text-warning">Update Security Answer *</label>
+            <input id="curSecAnswer" type="text" class="form-control" required placeholder="Answer">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-chalk w-100 py-2"><i class="bi bi-check-circle me-1"></i>Update Security Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card-s h-100">
+        <h5><i class="bi bi-palette-fill text-warning me-2"></i>Theme & Background Studio</h5>
+        <p class="text-secondary small">App ki Body aur Login Screen ke backgrounds alag-alag customize karein (Solid, Gradient Mix Color, ya Picture).</p>
+
+        <div class="p-3 rounded mb-3" style="background: rgba(11, 25, 32, 0.55); border: 1px solid #294c5c;">
+          <h6 class="text-warning mb-2"><i class="bi bi-window-desktop me-1"></i>1. App Body Background</h6>
+          <label class="form-label small">Beautiful Presets (Click to apply)</label>
+          <div id="bodyPresets" class="swatch-grid mb-3"></div>
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label small">Color Type</label>
+              <select id="bodyBgType" class="form-select form-select-sm">
+                <option value="solid">Solid Color</option>
+                <option value="gradient">Gradient (Mix Color)</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="form-label small">Color 1</label>
+              <input id="bodyColor1" type="color" class="form-control form-control-color" value="#0b1920">
+            </div>
+            <div class="col-6 col-md-3" id="bodyColor2Wrap">
+              <label class="form-label small">Color 2 (Mix)</label>
+              <input id="bodyColor2" type="color" class="form-control form-control-color" value="#134e5e">
+            </div>
+            <div class="col-md-2" id="bodyDirWrap">
+              <label class="form-label small">Angle</label>
+              <select id="bodyGradDir" class="form-select form-select-sm">
+                <option value="135deg">↘ 135°</option>
+                <option value="90deg">→ 90°</option>
+                <option value="180deg">↓ 180°</option>
+                <option value="45deg">↗ 45°</option>
+                <option value="radial">◎ Radial</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded mb-3" style="background: rgba(11, 25, 32, 0.55); border: 1px solid #294c5c;">
+          <h6 class="text-info mb-2"><i class="bi bi-box-arrow-in-right me-1"></i>2. Login Screen Background</h6>
+          <label class="form-label small">Beautiful Presets (Click to apply)</label>
+          <div id="loginPresets" class="swatch-grid mb-3"></div>
+          <div class="row g-2 align-items-end mb-2">
+            <div class="col-md-4">
+              <label class="form-label small">Login Bg Type</label>
+              <select id="loginBgType" class="form-select form-select-sm">
+                <option value="solid">Solid Color</option>
+                <option value="gradient">Gradient (Mix Color)</option>
+                <option value="image">Picture (Upload)</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3 login-color-ctrl">
+              <label class="form-label small">Color 1</label>
+              <input id="loginColor1" type="color" class="form-control form-control-color" value="#154352">
+            </div>
+            <div class="col-6 col-md-3 login-grad-ctrl">
+              <label class="form-label small">Color 2 (Mix)</label>
+              <input id="loginColor2" type="color" class="form-control form-control-color" value="#0b1920">
+            </div>
+            <div class="col-md-2 login-grad-ctrl">
+              <label class="form-label small">Angle</label>
+              <select id="loginGradDir" class="form-select form-select-sm">
+                <option value="135deg">↘ 135°</option>
+                <option value="90deg">→ 90°</option>
+                <option value="180deg">↓ 180°</option>
+                <option value="45deg">↗ 45°</option>
+                <option value="radial">◎ Radial</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="loginImgCtrl" class="mt-2 d-none">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-8">
+                <label class="form-label small">Upload Login Background Picture (JPG / PNG / WebP)</label>
+                <input id="loginBgFile" type="file" class="form-control form-control-sm" accept="image/*">
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <button type="button" id="removeLoginImgBtn" class="btn btn-sm btn-outline-danger w-100 mt-md-4"><i class="bi bi-trash me-1"></i>Remove Pic</button>
+              </div>
+              <div class="col-12 mt-2">
+                <label class="form-label small d-flex justify-content-between">
+                  <span>Dark Overlay (Card readability ke liye)</span>
+                  <span id="overlayValText">45%</span>
+                </label>
+                <input id="loginOverlayRange" type="range" class="form-range" min="0" max="80" value="45">
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label small">Live Login Screen Preview</label>
+            <div id="loginPreviewBox" class="login-preview-box">
+              <div class="login-preview-mini-card">
+                <img src="logo-192.png" alt="Preview Logo" style="width:28px;height:28px;border-radius:6px;" class="mb-1">
+                <div class="fw-bold text-warning">GGPS Sawar Cup</div>
+                <div class="small text-light">Login Screen Preview</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" id="saveThemeBtn" class="btn btn-chalk flex-fill py-2"><i class="bi bi-check2-all me-1"></i>Save & Apply Theme</button>
+          <button type="button" id="resetThemeBtn" class="btn btn-outline-light"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT -->
+<div class="tab-pane fade" id="tabExp">
+  <div class="card-s" style="max-width:640px">
+    <h5 class="mb-3"><i class="bi bi-file-earmark-spreadsheet-fill text-warning me-2"></i>Export Attendance (CSV / Excel)</h5>
+    <div class="row g-3">
+      <div class="col-md-6"><label class="form-label">Records</label><select id="exType" class="form-select"><option value="student">Student attendance</option><option value="teacher">Teacher attendance</option></select></div>
+      <div class="col-md-6"><label class="form-label">Range</label><select id="exMode" class="form-select"><option value="daily">Daily</option><option value="monthly">Monthly</option></select></div>
+      <div class="col-md-6"><input type="date" id="exDay" class="form-control"><input type="month" id="exMonth" class="form-control d-none"></div>
+      <div class="col-md-6"><button id="exBtn" class="btn btn-chalk w-100"><i class="bi bi-download me-1"></i>Download CSV</button></div>
+    </div>
+  </div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="viewBFormModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewBFormTitle">B-Form Document</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-3" id="viewBFormBody" style="min-height: 400px; background: #0b1519; display:flex; align-items:center; justify-content:center;"></div>
+      <div class="modal-footer">
+        <button id="downloadBFormBtn" class="btn btn-chalk"><i class="bi bi-download me-1"></i>Download PNG</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editStudentModal">
+  <div class="modal-dialog modal-lg">
+    <form id="editStudentForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Student & B-Form</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body row g-3">
+        <input type="hidden" id="editStudentId" name="id">
+        <div class="col-md-6"><label class="form-label">Full name</label><input id="editFullName" name="fullName" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Father's name</label><input id="editFatherName" name="fatherName" class="form-control" required></div>
+        <div class="col-md-3"><label class="form-label">Roll number</label><input id="editRollNumber" name="rollNumber" class="form-control" required></div>
+        <div class="col-md-3"><label class="form-label">Class</label><select id="editClass" name="class" class="form-select std-class-sel" required></select></div>
+        <div class="col-md-3"><label class="form-label">Section</label><select id="editSection" name="section" class="form-select std-sec-sel" required></select></div>
+        <div class="col-md-3"><label class="form-label">Date of birth</label><input id="editDob" name="dob" type="date" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Phone</label><input id="editPhone" name="phone" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">B-Form number</label><input id="editBFormNumber" name="bFormNumber" class="form-control"></div>
+        <div class="col-12">
+          <label class="form-label">Update B-Form Document (JPG, PNG, PDF)</label>
+          <input id="editBFormFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
+          <small id="currentBFormStatus" class="text-info mt-1 d-block"></small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-chalk">Update Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="teacherModal">
+  <div class="modal-dialog">
+    <form id="teacherForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Teacher</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body row g-3">
+        <div class="col-12"><label class="form-label">Full name *</label><input name="name" class="form-control" placeholder="Full name" required></div>
+        <div class="col-6"><label class="form-label">Staff ID *</label><input name="staffId" class="form-control" placeholder="e.g. T-04" required></div>
+        <div class="col-6"><label class="form-label">Department</label><input name="department" class="form-control" placeholder="e.g. Science"></div>
+        <div class="col-6"><label class="form-label">Assigned Class *</label><select name="assignedClass" class="form-select std-class-sel" required></select></div>
+        <div class="col-6"><label class="form-label">Assigned Section *</label><select name="assignedSection" class="form-select std-sec-sel" required></select></div>
+        <div class="col-12">
+          <label class="form-label text-warning">Set 4-Digit Login PIN *</label>
+          <div class="input-group">
+            <input id="addTeacherPin" name="pin" type="password" maxlength="4" class="form-control pin-input" placeholder="••••" required pattern="[0-9]{4}">
+            <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="addTeacherPin"><i class="bi bi-eye-fill text-warning"></i></button>
+          </div>
+          <small class="text-secondary">Teacher is 4-digit code se apna account open karega.</small>
+        </div>
+        <div class="col-6"><label class="form-label">Phone</label><input name="phone" class="form-control" placeholder="Phone number"></div>
+        <div class="col-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" placeholder="Email address"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-chalk">Save Teacher & PIN</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="editTeacherModal">
+  <div class="modal-dialog">
+    <form id="editTeacherForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Teacher & PIN Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body row g-3">
+        <input type="hidden" id="editTeacherId" name="id">
+        <div class="col-12"><label class="form-label">Full Name *</label><input id="editTName" name="name" class="form-control" required></div>
+        <div class="col-6"><label class="form-label">Staff ID *</label><input id="editTStaffId" name="staffId" class="form-control" required></div>
+        <div class="col-6"><label class="form-label">Department</label><input id="editTDept" name="department" class="form-control"></div>
+        <div class="col-6"><label class="form-label">Assigned Class *</label><select id="editTClass" name="assignedClass" class="form-select std-class-sel" required></select></div>
+        <div class="col-6"><label class="form-label">Assigned Section *</label><select id="editTSection" name="assignedSection" class="form-select std-sec-sel" required></select></div>
+        <div class="col-12">
+          <label class="form-label text-warning">Update 4-Digit Login PIN</label>
+          <div class="input-group">
+            <input id="editTPin" name="pin" type="password" maxlength="4" class="form-control pin-input" placeholder="••••" required pattern="[0-9]{4}">
+            <button type="button" class="btn btn-outline-secondary toggle-eye" data-target="editTPin"><i class="bi bi-eye-fill text-warning"></i></button>
+          </div>
+          <small class="text-secondary">Admin yahan se teacher ka PIN reset ya change kar sakta hai.</small>
+        </div>
+        <div class="col-6"><label class="form-label">Phone</label><input id="editTPhone" name="phone" class="form-control"></div>
+        <div class="col-6"><label class="form-label">Email</label><input id="editTEmail" type="email" name="email" class="form-control"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-chalk">Update Record & PIN</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toasts"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="app.js?v=8"></script>
+</body>
+</html>
