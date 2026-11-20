@@ -1,4 +1,10 @@
-// GGPS Sawar Cup - Complete School Management Application Logic (v15 + Teacher Locked Class Admission)
+import { neon } from 'https://esm.sh/@neondatabase/serverless@0.9.0';
+
+// ========================================================
+// DIRECT NEON POSTGRES CONNECTION
+// ========================================================
+const NEON_CONN_STRING = "postgresql://neondb_owner:npg_Pp7ZIAD6lOdm@ep-rapid-darkness-bekuo4wo-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require";
+const sql = neon(NEON_CONN_STRING);
 
 const STORE_KEY = "ggps_sawarcup_db_v15";
 
@@ -66,10 +72,11 @@ const DEFAULT_THEME = {
   loginOverlay: 45
 };
 
-let db = loadDB();
+let db = loadLocalDB();
 let session = { role: null, teacherId: null };
 let currentBFormData = { url: "", name: "" };
 let pendingRecoveryEmail = "";
+let activeNeonTable = "school_store";
 
 function defaultDB() {
   return {
@@ -98,112 +105,7 @@ function defaultDB() {
   };
 }
 
-// ========================================================
-// SMART LEGACY DATA RECOVERY + DATABASE LOADER
-// ========================================================
-function recoverLegacyLocalStorage() {
-  const recovered = {};
-  let foundAny = false;
-
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (!key || key === STORE_KEY) continue;
-    const raw = localStorage.getItem(key);
-    if (!raw) continue;
-
-    if (raw.startsWith("{")) {
-      try {
-        const obj = JSON.parse(raw);
-        if (obj && typeof obj === "object") {
-          if (obj.account && obj.account.email) {
-            recovered.account = obj.account;
-            foundAny = true;
-          } else if (obj.email && (obj.pin || obj.password)) {
-            recovered.account = {
-              email: obj.email,
-              password: obj.password || obj.pass || "",
-              pin: obj.pin || "1234",
-              question: obj.question || obj.secQuestion || "School Name?",
-              answer: obj.answer || obj.secAnswer || "ggps"
-            };
-            foundAny = true;
-          }
-
-          if (Array.isArray(obj.students) && obj.students.length > 0) {
-            recovered.students = obj.students;
-            foundAny = true;
-          }
-          if (Array.isArray(obj.teachers) && obj.teachers.length > 0) {
-            recovered.teachers = obj.teachers;
-            foundAny = true;
-          }
-          if (obj.studentAttendance && Object.keys(obj.studentAttendance).length > 0) {
-            recovered.studentAttendance = obj.studentAttendance;
-            foundAny = true;
-          }
-          if (obj.teacherAttendance && Object.keys(obj.teacherAttendance).length > 0) {
-            recovered.teacherAttendance = obj.teacherAttendance;
-            foundAny = true;
-          }
-          if (obj.marks && Object.keys(obj.marks).length > 0) {
-            recovered.marks = obj.marks;
-            foundAny = true;
-          }
-          if (obj.reportMeta && Object.keys(obj.reportMeta).length > 0) {
-            recovered.reportMeta = obj.reportMeta;
-            foundAny = true;
-          }
-          if (obj.geofence && (obj.geofence.lat || obj.geofence.lng)) {
-            recovered.geofence = obj.geofence;
-            foundAny = true;
-          }
-        }
-      } catch (e) {}
-    }
-
-    const lk = key.toLowerCase();
-    try {
-      if (lk.includes("student") && !lk.includes("att") && raw.startsWith("[")) {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr) && arr.length) {
-          recovered.students = arr;
-          foundAny = true;
-        }
-      } else if (lk.includes("teacher") && !lk.includes("att") && raw.startsWith("[")) {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr) && arr.length) {
-          recovered.teachers = arr;
-          foundAny = true;
-        }
-      } else if ((lk.includes("admin") || lk.includes("auth") || lk.includes("account")) && raw.startsWith("{")) {
-        const acc = JSON.parse(raw);
-        if (acc && acc.email) {
-          recovered.account = {
-            email: acc.email,
-            password: acc.password || acc.pass || "",
-            pin: acc.pin || "1234",
-            question: acc.question || acc.secQuestion || "School Name?",
-            answer: acc.answer || acc.secAnswer || "ggps"
-          };
-          foundAny = true;
-        }
-      } else if ((lk.includes("satt") || lk.includes("student_att")) && raw.startsWith("{")) {
-        recovered.studentAttendance = JSON.parse(raw);
-        foundAny = true;
-      } else if ((lk.includes("tatt") || lk.includes("teacher_att")) && raw.startsWith("{")) {
-        recovered.teacherAttendance = JSON.parse(raw);
-        foundAny = true;
-      } else if (lk.includes("mark") && raw.startsWith("{")) {
-        recovered.marks = JSON.parse(raw);
-        foundAny = true;
-      }
-    } catch (e) {}
-  }
-
-  return foundAny ? recovered : null;
-}
-
-function loadDB() {
+function loadLocalDB() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
@@ -215,70 +117,116 @@ function loadDB() {
         theme: { ...DEFAULT_THEME, ...(parsed.theme || {}) }
       };
     }
+  } catch (e) {}
+  return defaultDB();
+}
 
-    const legacy = recoverLegacyLocalStorage();
-    if (legacy) {
-      const merged = {
-        ...defaultDB(),
-        ...legacy,
-        geofence: { ...defaultDB().geofence, ...(legacy.geofence || {}) },
-        theme: { ...DEFAULT_THEME, ...(legacy.theme || {}) }
-      };
-      localStorage.setItem(STORE_KEY, JSON.stringify(merged));
-      return merged;
+// ========================================================
+// NEON CLOUD DATABASE SYNC (LOAD & SAVE)
+// ========================================================
+async function initNeonSync() {
+  try {
+    showToast("Neon Cloud Database se data sync ho raha hai...", "info");
+
+    // 1. Check existing tables in Neon to recover any previous data automatically
+    const tables = await sql`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `;
+    const tableNames = tables.map((t) => t.table_name);
+
+    let loadedFromNeon = false;
+
+    for (const tName of tableNames) {
+      try {
+        const rows = await sql(`SELECT * FROM "${tName}" LIMIT 5`);
+        if (rows && rows.length > 0) {
+          for (const row of rows) {
+            const candidate = row.data || row.payload || row.state || row.json_data || row.value;
+            const parsed = typeof candidate === "string" ? JSON.parse(candidate) : candidate;
+            if (parsed && typeof parsed === "object" && (parsed.account || Array.isArray(parsed.students))) {
+              db = {
+                ...defaultDB(),
+                ...parsed,
+                geofence: { ...defaultDB().geofence, ...(parsed.geofence || {}) },
+                theme: { ...DEFAULT_THEME, ...(parsed.theme || {}) }
+              };
+              activeNeonTable = tName;
+              loadedFromNeon = true;
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+      if (loadedFromNeon) break;
     }
 
-    return defaultDB();
-  } catch (e) {
-    return defaultDB();
+    // 2. Ensure standard key-value store table exists in Neon
+    if (!loadedFromNeon) {
+      await sql`
+        CREATE TABLE IF NOT EXISTS school_store (
+          id TEXT PRIMARY KEY,
+          data JSONB NOT NULL,
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `;
+      const existing = await sql`SELECT data FROM school_store WHERE id = 'main_db' LIMIT 1`;
+      if (existing.length > 0 && existing[0].data) {
+        const parsed = typeof existing[0].data === "string" ? JSON.parse(existing[0].data) : existing[0].data;
+        db = {
+          ...defaultDB(),
+          ...parsed,
+          geofence: { ...defaultDB().geofence, ...(parsed.geofence || {}) },
+          theme: { ...DEFAULT_THEME, ...(parsed.theme || {}) }
+        };
+        loadedFromNeon = true;
+      } else if (db.account || db.students.length > 0) {
+        await saveNeonDB();
+      }
+    }
+
+    localStorage.setItem(STORE_KEY, JSON.stringify(db));
+    applyThemeToDOM(db.theme);
+
+    if (db.account && !session.role) {
+      showAuthCard("pinLoginCard");
+      populateTeacherLoginDropdown();
+    }
+    refreshAllViews();
+
+    if (loadedFromNeon) {
+      showToast("Neon Cloud se purana record load ho gaya!", "success");
+    }
+  } catch (err) {
+    console.error("Neon Sync Error:", err);
+    showToast("Neon Cloud offline hai — Local mode active hai.", "warning");
   }
 }
 
-async function checkIndexedDBLegacy() {
-  if (!window.indexedDB || !indexedDB.databases) return;
+async function saveNeonDB() {
   try {
-    const dbs = await indexedDB.databases();
-    for (const info of dbs) {
-      if (!info.name) continue;
-      const req = indexedDB.open(info.name);
-      req.onsuccess = (ev) => {
-        const idb = ev.target.result;
-        const storeNames = Array.from(idb.objectStoreNames);
-        if (!storeNames.length) return;
-        let updated = false;
-        const tx = idb.transaction(storeNames, "readonly");
-        storeNames.forEach((sName) => {
-          const store = tx.objectStore(sName);
-          const getAllReq = store.getAll();
-          getAllReq.onsuccess = () => {
-            const items = getAllReq.result || [];
-            if (!items.length) return;
-            const sn = sName.toLowerCase();
-            if (sn.includes("student") && !db.students.length) {
-              db.students = items;
-              updated = true;
-            } else if (sn.includes("teacher") && db.teachers.length <= 1) {
-              db.teachers = items;
-              updated = true;
-            }
-            if (updated) {
-              saveDB();
-              refreshAllViews();
-              showToast("Purana IndexedDB data wapas aa gaya!", "success");
-            }
-          };
-        });
-      };
+    const jsonStr = JSON.stringify(db);
+    if (activeNeonTable === "school_store") {
+      await sql`
+        INSERT INTO school_store (id, data, updated_at)
+        VALUES ('main_db', ${jsonStr}::jsonb, NOW())
+        ON CONFLICT (id)
+        DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
+      `;
+    } else {
+      await sql(`UPDATE "${activeNeonTable}" SET data = $1::jsonb`, [jsonStr]);
     }
-  } catch (e) {}
+  } catch (err) {
+    console.error("Neon Save Error:", err);
+  }
 }
 
 function saveDB() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(db));
-  } catch (e) {
-    showToast("Storage full! Purani badi images delete karein.", "danger");
-  }
+  } catch (e) {}
+  saveNeonDB();
 }
 
 // ========================================================
@@ -369,7 +317,7 @@ function getActiveTeacher() {
 // ========================================================
 // INITIALIZATION
 // ========================================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   populateDropdowns();
   setDefaultDates();
   applyThemeToDOM(db.theme);
@@ -385,7 +333,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initSecuritySettings();
   initExportCSV();
   initPasswordToggles();
-  checkIndexedDBLegacy();
 
   window.addEventListener("resize", () => applyThemeToDOM(db.theme));
 
@@ -393,6 +340,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (rcLogo) {
     rcLogo.src = DEFAULT_RC_LOGO_SVG;
   }
+
+  // Pull live data & background theme from Neon Cloud
+  await initNeonSync();
 });
 
 function populateDropdowns() {
@@ -468,7 +418,7 @@ function initAuthSystem() {
     }
     db.account = { email, password, pin, question, answer };
     saveDB();
-    showToast("School Account & 4-Digit PIN set ho gaya!", "success");
+    showToast("School Account & 4-Digit PIN Neon Cloud mein save ho gaya!", "success");
     unlockDashboard("admin", null);
   });
 
@@ -634,14 +584,12 @@ function applyAdmissionRoleState() {
   if (!classSel || !secSel) return;
 
   if (teacher) {
-    // Teacher mode: Auto-assign & lock class/section so teacher doesn't have to pick it
     classSel.value = teacher.assignedClass;
     secSel.value = teacher.assignedSection;
     classSel.disabled = true;
     secSel.disabled = true;
     $("admitRoleNote").innerHTML = `<i class="bi bi-lock-fill me-1"></i>Auto-Assigned Class: ${esc(teacher.assignedClass)} (${esc(teacher.assignedSection)})`;
   } else {
-    // Admin mode: Full freedom to choose any class & section
     classSel.disabled = false;
     secSel.disabled = false;
     $("admitRoleNote").textContent = "Full Admin Access";
@@ -800,9 +748,9 @@ function renderDashboard() {
 $("dashDate")?.addEventListener("change", renderDashboard);
 $("dashClass")?.addEventListener("change", renderDashboard);
 $("dashSection")?.addEventListener("change", renderDashboard);
-$("refreshDashBtn")?.addEventListener("click", () => {
-  renderDashboard();
-  showToast("Dashboard updated!", "info");
+$("refreshDashBtn")?.addEventListener("click", async () => {
+  await initNeonSync();
+  showToast("Neon Cloud se latest data refresh ho gaya!", "info");
 });
 
 // ========================================================
@@ -823,7 +771,6 @@ function initAdmission() {
     const fullName = fd.get("fullName").trim();
     const fatherName = fd.get("fatherName").trim();
     const rollNumber = fd.get("rollNumber").trim();
-    // If teacher is logged in, force their assigned class & section even though dropdowns are disabled
     const cls = teacher ? teacher.assignedClass : $("admitClass").value;
     const section = teacher ? teacher.assignedSection : $("admitSection").value;
     const bFormNumber = formatBFormDigits(fd.get("bFormNumber"));
@@ -871,12 +818,11 @@ function initAdmission() {
     db.students.push(student);
     saveDB();
     e.target.reset();
-    // Re-apply teacher's locked class/section after form reset
     applyAdmissionRoleState();
 
     $("ageWarning")?.classList.add("d-none");
     $("bFormDupAlert")?.classList.add("d-none");
-    showToast(`${fullName} (${cls}-${section}) ka dakhla mukammal ho gaya!`, "success");
+    showToast(`${fullName} (${cls}-${section}) Neon Cloud mein save ho gaya!`, "success");
     refreshAllViews();
   });
 }
@@ -1087,7 +1033,7 @@ function initStudentAttendance() {
 
     saveDB();
     renderDashboard();
-    showToast(`Attendance (${date}) save ho gayi!`, "success");
+    showToast(`Attendance (${date}) Neon Cloud mein save ho gayi!`, "success");
   });
 }
 
@@ -2033,7 +1979,7 @@ function initThemeStudio() {
     db.theme = { ...draftTheme };
     saveDB();
     applyThemeToDOM(db.theme);
-    showToast("Theme & Background save ho gaya!", "success");
+    showToast("Theme & Background Neon Cloud mein save ho gaya!", "success");
   });
 
   $("resetThemeBtn")?.addEventListener("click", () => {
